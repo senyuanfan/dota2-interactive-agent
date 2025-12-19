@@ -1,9 +1,13 @@
 import fs from 'node:fs'
 import path from 'node:path'
+import dotenv from 'dotenv'
 import cors from 'cors'
 import express from 'express'
 import Database from 'better-sqlite3'
 import { fetch } from 'undici'
+
+// Load root-level .env (one directory above /server)
+dotenv.config({ path: path.resolve(process.cwd(), '..', '.env') })
 
 type WebCitation = { title: string; url: string; snippet?: string }
 type ChatMessage = { role: 'system' | 'user' | 'assistant'; content: string }
@@ -49,7 +53,11 @@ app.post('/api/chat', async (req, res) => {
   try {
     const serpResults = await searchSerpApi(message, SERPAPI_API_KEY)
     if (!serpResults.length) {
-      res.status(502).json({ error: 'No search results from SerpAPI' })
+      res.json({
+        answer:
+          'I could not find relevant sources for that query right now. Try rephrasing or adding more specifics.',
+        citations: [],
+      })
       return
     }
     persistNotes(db, message, serpResults)
