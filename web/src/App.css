@@ -1,0 +1,144 @@
+.appShell {
+  height: 100vh;
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  background: #0b0f17;
+  color: #e6eaf2;
+}
+
+.appHeader {
+  padding: 16px 18px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(14, 18, 28, 0.85);
+  backdrop-filter: blur(10px);
+}
+
+.appTitle {
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.appSubtitle {
+  margin-top: 4px;
+  font-size: 13px;
+  color: rgba(230, 234, 242, 0.7);
+}
+
+.chatMain {
+  padding: 18px;
+  overflow: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.msgRow {
+  display: flex;
+}
+
+.msgUser {
+  justify-content: flex-end;
+}
+
+.msgAssistant {
+  justify-content: flex-start;
+}
+
+.msgBubble {
+  max-width: min(820px, 92%);
+  border-radius: 14px;
+  padding: 12px 14px;
+  line-height: 1.4;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.msgUser .msgBubble {
+  background: rgba(74, 110, 255, 0.18);
+}
+
+.msgAssistant .msgBubble {
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.msgText {
+  white-space: pre-wrap;
+}
+
+.citations {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.citationsTitle {
+  font-size: 12px;
+  color: rgba(230, 234, 242, 0.75);
+  margin-bottom: 6px;
+}
+
+.citationsList {
+  margin: 0;
+  padding-left: 18px;
+  font-size: 13px;
+}
+
+.citationsList a {
+  color: rgba(126, 203, 255, 0.95);
+  text-decoration: none;
+}
+
+.citationsList a:hover {
+  text-decoration: underline;
+}
+
+.chatFooter {
+  padding: 12px 18px 18px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(14, 18, 28, 0.85);
+  backdrop-filter: blur(10px);
+}
+
+.errorBanner {
+  margin-bottom: 10px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 120, 120, 0.35);
+  background: rgba(255, 70, 70, 0.12);
+  color: rgba(255, 215, 215, 0.95);
+  font-size: 13px;
+}
+
+.composer {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 10px;
+}
+
+.composerInput {
+  width: 100%;
+  border-radius: 12px;
+  padding: 12px 12px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.05);
+  color: rgba(230, 234, 242, 0.95);
+  outline: none;
+}
+
+.composerInput::placeholder {
+  color: rgba(230, 234, 242, 0.45);
+}
+
+.composerButton {
+  border-radius: 12px;
+  padding: 10px 14px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(255, 255, 255, 0.08);
+  color: rgba(230, 234, 242, 0.95);
+  cursor: pointer;
+}
+
+.composerButton:disabled,
+.composerInput:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
