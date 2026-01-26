@@ -1,15 +1,51 @@
+# Environment
 *.env
+.env.*
+!.env.example
+
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+build/
+*.tsbuildinfo
+
+# Database
+data/
+*.db
+*.db-wal
+*.db-shm
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+
+# IDE
+.cursor/
+.idea/
+*.swp
+*.swo
+.vscode/settings.json
+
+# OS
+.DS_Store
+Thumbs.db
 
 # Playwright
-node_modules/
 /test-results/
 /playwright-report/
 /blob-report/
 /playwright/.cache/
 /playwright/.auth/
 
-# database
-data/
+# Python (if used)
+.venv/
+__pycache__/
+*.pyc
 
-# cursor
-.cursor/
+# Misc
+*.local
+.claude/
+**/temp**

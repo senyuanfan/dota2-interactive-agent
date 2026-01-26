@@ -1,38 +1,88 @@
 # Dota 2 Interactive Agent
 
-This project is a locally runnable web app that serves as an interactive Dota 2 agent, providing domain knowledge (heroes, items, mechanics, strategy) to support gameplay questions and decisions.
+An AI-powered assistant that understands Dota 2, its mechanics, current meta, and helps players improve their game through personalized advice.
 
-## Features
-- Chatbot-like web interface (OpenAI-style) for user interaction.
-- Main chat agent supporting both text and real-time streamed voice modes.
-- Secondary information agent leveraging web search and browsing tools (e.g., Liquipedia, Dotabuff) for data gathering.
-- Notes database for storing custom data such as hero synonyms (including multilingual support).
+## Tech Stack
 
-## Stack
-- Frontend: TypeScript
-- Backend: Node.js with TypeScript
-- Database: SQLite (locally stored, entries are tagged for efficient retrieval)
+- **Frontend**: React + Tailwind CSS + Vite
+- **Backend**: Express.js + TypeScript
+- **Database**: SQLite (better-sqlite3)
+- **LLM**: Multi-provider support (Anthropic, OpenAI, OpenRouter)
 
-## Requirements
-- Node.js 18+ and npm (npm is used across all packages)
+## Project Structure
+
+```
+dota2-interactive-agent/
+├── server/                 # Express.js backend
+│   └── src/
+│       ├── db/            # Database setup and migrations
+│       ├── routes/        # API routes (chat, profile, health)
+│       └── services/      # Business logic (LLM, search, profile, memory)
+├── web/                   # React frontend
+└── data/                  # SQLite database files
+```
 
 ## Setup
-- Install root dev tools (Playwright, types): `npm install`
-- Install server deps: `cd server && npm install`
-- Install web deps: `cd web && npm install`
-- First time running Playwright tests: `npx playwright install`
 
-## Run
-- Backend API (default http://localhost:8787):
-  - Set keys: `SERPAPI_API_KEY` (required), `OPENAI_API_KEY` or `OPENROUTER_API_KEY`, optional `PORT` and `SQLITE_PATH` (defaults to `../data/notes.db`).
-  - Dev mode (auto-reload): `cd server && npm run dev`
-  - Prod entry (no reload): `cd server && npm run start`
-- Web app (http://localhost:5173 with proxy to 8787):
-  - `cd web && npm run dev`
-  - The Vite dev server proxies `/api` to the backend at `localhost:8787`.
+1. **Install dependencies**
+   ```bash
+   npm install
+   cd server && npm install
+   cd ../web && npm install
+   ```
 
-## Test
-- End-to-end tests use Playwright and run from the repo root.
-- Install browsers once: `npx playwright install`
-- Run tests headlessly: `npx playwright test`
-- Open the HTML report after a run: `npx playwright show-report`
+2. **Configure environment**
+
+   Copy `.env.example` to `.env` and set your API keys:
+   ```
+   ANTHROPIC_API_KEY=your_key_here
+   # or
+   OPENAI_API_KEY=your_key_here
+   # or
+   OPENROUTER_API_KEY=your_key_here
+
+   SERPAPI_API_KEY=your_serpapi_key
+   ```
+
+3. **Start the server**
+   ```bash
+   cd server && npm run dev
+   ```
+
+4. **Start the frontend**
+   ```bash
+   cd web && npm run dev
+   ```
+
+## API Endpoints
+
+### Chat
+- `POST /api/chat` - Send a message and get AI response with web-sourced citations
+
+### Profile
+- `GET /api/profile` - Get current user profile
+- `PUT /api/profile` - Update profile fields
+- `GET /api/profile/heroes` - Get preferred heroes list
+- `PUT /api/profile/heroes` - Update preferred heroes
+
+### Health
+- `GET /api/health` - Server health check
+
+## Features
+
+### User Profile System
+The agent remembers and evolves its understanding of the user:
+- **Preferred Heroes**: Heroes the user plays
+- **Preferred Roles**: carry, mid, offlane, support
+- **Skill Level**: Herald to Immortal
+- **Playstyle**: aggressive, farming-focused, etc.
+- **Learning Goals**: What the user wants to improve
+
+Preferences are automatically extracted from conversations using LLM and merged intelligently (new data adds to existing, doesn't overwrite).
+
+### Personalized Responses
+Chat responses are tailored based on the user's profile - advice is adjusted for their skill level, preferred heroes, and learning goals.
+
+## Development
+
+See [TODO.md](./TODO.md) for the full roadmap and current progress.
