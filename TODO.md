@@ -2,6 +2,10 @@
 
 An agent that understands the game of Dota2, its mechanics, up-to-date meta, culture in pro games and also in player communities, as well as how to communicate with a gamer in real-time before, during, and after games.
 
+Recent update:
+- [x] Refresh frontend UI style to brutalist monochrome with framed highlights.
+- [x] Reprioritize roadmap for current-patch freshness using OpenDota + STRATZ public data.
+
 ---
 
 ## Tech Stack
@@ -17,23 +21,33 @@ An agent that understands the game of Dota2, its mechanics, up-to-date meta, cul
 ## Stage 1: Game Understanding (Current Focus)
 
 ### 1. Meta Understanding
-Grasp understanding of the **current** version of the game. Don't store data locally if easily accessible via wiki - fetch dynamically.
+Grasp understanding of the **current** version of the game. API-first data retrieval is required for freshness.
+
+**Freshness rule (hard requirement):**
+- Any gameplay/meta/mechanics information must match the current patch.
+- Stale patch information is not useful for retrieval/ranking and should be excluded.
+- Exception: player lore/history and timeless background content can remain regardless of patch.
 
 **What to store locally:**
 - Pro meta / tier lists
 - Hero guides relevant to user's preferred heroes
 - Current patch version (for change detection)
+- Data source metadata (provider + fetched_at + patch_version)
 
 **What to fetch dynamically:**
-- Hero stats, abilities, talents (via Dota2 Wiki)
-- Item details
-- Basic game mechanics
+- Hero stats, winrates, pick/ban trends (OpenDota + STRATZ public endpoints)
+- Matchup and item trend data (OpenDota + STRATZ public endpoints)
+- Current patch signals/version markers and update timestamps
 
 **Tasks:**
-- [ ] Create wiki scraper service for dynamic data fetching
-- [ ] Implement patch version checker (periodic + manual trigger)
-- [ ] Build meta/tier list storage and update system
+- [ ] Build OpenDota API client service (using `OPENDOTA_API_KEY`)
+- [ ] Build STRATZ public API client (no login/auth-only endpoints)
+- [ ] Implement patch version checker (periodic + manual trigger) with invalidation of stale data
+- [ ] Create normalization layer for OpenDota/STRATZ -> internal schema
+- [ ] Add patch freshness filter in retrieval/ranking pipeline
+- [ ] Build meta/tier list storage and update system (tagged by patch_version)
 - [ ] Create hero guide storage linked to user preferences
+- [ ] Keep wiki scraping as secondary fallback/context source only
 
 ### 2. User Understanding
 Talk to the user and maintain evolving memory of their preferences.
@@ -91,7 +105,10 @@ Chat interface to discuss game-related questions using the knowledge base.
   - KnowledgeBase table (articles, guides, meta info)
   - ChatHistory table
   - PatchInfo table
-- [ ] Wiki scraper service (Dota2 Wiki, Liquipedia)
+- [ ] OpenDota API service integration
+- [ ] STRATZ public API integration (no login/auth-only endpoints)
+- [ ] Unified data normalization and freshness metadata pipeline
+- [ ] Wiki scraper service (Dota2 Wiki, Liquipedia) as secondary fallback only
 - [ ] URL content scraper service
 - [x] LLM service abstraction (OpenAI, Anthropic, OpenRouter)
 
@@ -104,8 +121,9 @@ Chat interface to discuss game-related questions using the knowledge base.
 ### Phase 4: Knowledge Base System
 - [ ] URL ingestion endpoint
 - [ ] Content processing pipeline
-- [ ] Patch checker (cron job + manual trigger)
-- [ ] Meta/tier list fetching and storage
+- [ ] Patch checker (cron job + manual trigger) with stale-data invalidation
+- [ ] Meta/tier list fetching and storage from OpenDota + STRATZ public data
+- [ ] Retrieval/rerank policy: prioritize current patch and exclude stale non-lore content
 
 ### Phase 5: Chat Interface
 - [ ] Chat API with streaming support
@@ -133,8 +151,10 @@ Chat interface to discuss game-related questions using the knowledge base.
 
 1. Modularized skills and subagents for subtask breakdown
 2. LLMs with audio/screen understanding (Stage 2)
-3. Web scraping for wiki and content ingestion
-4. Dota2-related MCP servers (if available)
+3. OpenDota API for live/current-patch gameplay data
+4. STRATZ public endpoints for live/current-patch gameplay data (no login flow)
+5. Web scraping for wiki and content ingestion (secondary fallback)
+6. Dota2-related MCP servers (if available)
 
 ---
 
@@ -144,3 +164,5 @@ Chat interface to discuss game-related questions using the knowledge base.
 2. [Dota2 Counter Pick](https://dotapicker.com/counterpick)
 3. [Dota2 Wiki](https://dota2.fandom.com/wiki/Dota_2_Wiki)
 4. [Liquipedia Dota2](https://liquipedia.net/dota2/Main_Page)
+5. [OpenDota API](https://docs.opendota.com/)
+6. [STRATZ](https://stratz.com/)
