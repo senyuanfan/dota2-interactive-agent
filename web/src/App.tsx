@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useMemo, useRef, useState } from 'react'
 import './App.css'
 
 type Role = 'user' | 'assistant'
@@ -9,17 +9,27 @@ type Citation = {
 }
 
 type ChatMessage = {
+  id: number
   role: Role
   content: string
   citations?: Citation[]
 }
 
+let nextId = 1
+
 function App() {
+  const idRef = useRef(nextId)
+
+  function makeId() {
+    return idRef.current++
+  }
+
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
+      id: makeId(),
       role: 'assistant',
       content:
-        'Ask me anything about Dota 2. I’ll search the web and include sources.',
+        'Ask me anything about Dota 2. I\'ll search the web and include sources.',
     },
   ])
   const [input, setInput] = useState('')
@@ -27,10 +37,7 @@ function App() {
   const [error, setError] = useState<string | null>(null)
 
   const historyForApi = useMemo(
-    () =>
-      messages
-        .filter((m) => m.role === 'user' || m.role === 'assistant')
-        .map((m) => ({ role: m.role, content: m.content })),
+    () => messages.map((m) => ({ role: m.role, content: m.content })),
     [messages],
   )
 
@@ -44,7 +51,7 @@ function App() {
 
     const nextMessages: ChatMessage[] = [
       ...messages,
-      { role: 'user', content: trimmed },
+      { id: makeId(), role: 'user', content: trimmed },
     ]
     setMessages(nextMessages)
 
@@ -68,6 +75,7 @@ function App() {
       setMessages([
         ...nextMessages,
         {
+          id: makeId(),
           role: 'assistant',
           content: data.answer,
           citations: data.citations,
@@ -88,9 +96,9 @@ function App() {
       </header>
 
       <main className="chatMain" aria-label="Chat">
-        {messages.map((m, idx) => (
+        {messages.map((m) => (
           <div
-            key={idx}
+            key={m.id}
             className={`msgRow ${m.role === 'user' ? 'msgUser' : 'msgAssistant'}`}
           >
             <div className="msgBubble">
@@ -116,7 +124,7 @@ function App() {
         {isLoading ? (
           <div className="msgRow msgAssistant">
             <div className="msgBubble">
-              <div className="msgText">Thinking…</div>
+              <div className="msgText">Thinking...</div>
             </div>
           </div>
         ) : null}
@@ -130,7 +138,7 @@ function App() {
             className="composerInput"
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            placeholder="Ask about heroes, items, matchups, mechanics…"
+            placeholder="Ask about heroes, items, matchups, mechanics..."
             onKeyDown={(e) => {
               if (e.key === 'Enter' && !e.shiftKey) onSend()
             }}
