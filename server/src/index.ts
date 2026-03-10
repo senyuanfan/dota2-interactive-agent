@@ -5,7 +5,7 @@ import express from 'express'
 
 import { initDatabase } from './db/index.js'
 import { createLLMService } from './services/llm.js'
-import { createChatRouter, createHealthRouter, createProfileRouter } from './routes/index.js'
+import { createChatRouter, createHealthRouter, createMetaRouter, createProfileRouter } from './routes/index.js'
 
 // Load root-level .env (one directory above /server)
 dotenv.config({ path: path.resolve(process.cwd(), '..', '.env') })
@@ -13,6 +13,7 @@ dotenv.config({ path: path.resolve(process.cwd(), '..', '.env') })
 // Environment configuration
 const PORT = Number(process.env.PORT ?? 8787)
 const SERPAPI_API_KEY = process.env.SERPAPI_API_KEY ?? ''
+const OPENDOTA_API_KEY = process.env.OPENDOTA_API_KEY ?? ''
 const SQLITE_PATH = resolveDbPath(process.env.SQLITE_PATH)
 
 // Initialize database
@@ -38,6 +39,7 @@ app.use(cors())
 app.use('/api/health', createHealthRouter())
 app.use('/api/profile', createProfileRouter({ db }))
 app.use('/api/chat', createChatRouter({ db, llm, serpApiKey: SERPAPI_API_KEY }))
+app.use('/api/meta', createMetaRouter({ db, opendotaApiKey: OPENDOTA_API_KEY }))
 
 // Start server
 app.listen(PORT, () => {

@@ -2,6 +2,7 @@ import { Router } from 'express'
 import type { DatabaseInstance } from '../db/index.js'
 import type { LLMService, ChatMessage } from '../services/llm.js'
 import { searchWeb, type WebCitation } from '../services/search.js'
+import { getRelevantCurrentMetaSources } from '../services/meta.js'
 import { getProfile, updateProfile, type UserProfile } from './profile.js'
 import { extractPreferences, hasPreferences } from '../services/profile.js'
 import { evolveProfile, buildPersonalizedPrompt, hasProfileData } from '../services/memory.js'
@@ -57,9 +58,13 @@ export function createChatRouter({ db, llm, serpApiKey }: ChatRouterDeps): Route
       // Persist search results to notes
       persistNotes(db, message, serpResults)
 
+      // Add current-patch meta context for retrieval freshness.
+      const metaSources = getRelevantCurrentMetaSources(db, message, 3)
+      const combinedSources: PromptSource[] = [...metaSources, ...serpResults]
+
       // Build context and call LLM with personalized prompt
-      const citations = serpResults.map((r) => ({ title: r.title, url: r.url }))
-      const { systemMessage, userMessage } = buildPrompt(message, serpResults, profile)
+      const citations = combinedSources.map((r) => ({ title: r.title, url: r.url }))
+      const { systemMessage, userMessage } = buildPrompt(message, combinedSources, profile)
 
       const sanitizedHistory: ChatMessage[] = history.map((h) => ({
         role: h.role === 'assistant' ? 'assistant' : 'user',
@@ -86,7 +91,7 @@ export function createChatRouter({ db, llm, serpApiKey }: ChatRouterDeps): Route
 
 function buildPrompt(
   query: string,
-  sources: WebCitation[],
+  sources: PromptSource[],
   profile: UserProfile | null
 ): { systemMessage: ChatMessage; userMessage: ChatMessage } {
   const numbered = sources
@@ -114,6 +119,8 @@ function buildPrompt(
 
   return { systemMessage, userMessage }
 }
+
+type PromptSource = WebCitation | { title: string; url: string; snippet: string }
 
 /**
  * Extract preferences from message and update profile (runs in background)

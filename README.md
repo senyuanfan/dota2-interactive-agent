@@ -42,6 +42,7 @@ dota2-interactive-agent/
    OPENROUTER_API_KEY=your_key_here
 
    SERPAPI_API_KEY=your_serpapi_key
+   OPENDOTA_API_KEY=your_opendota_key
    ```
 
 3. **Start the server**
@@ -68,6 +69,10 @@ dota2-interactive-agent/
 ### Health
 - `GET /api/health` - Server health check
 
+### Meta (Current Patch)
+- `POST /api/meta/sync` - Pull latest OpenDota + STRATZ public data and refresh current patch snapshots
+- `GET /api/meta/current` - Read current patch snapshots (`limit`, `provider`, `entityType` supported)
+
 ## Features
 
 ### User Profile System
@@ -82,6 +87,11 @@ Preferences are automatically extracted from conversations using LLM and merged 
 
 ### Personalized Responses
 Chat responses are tailored based on the user's profile - advice is adjusted for their skill level, preferred heroes, and learning goals.
+
+### Current-Patch Meta Pipeline
+- OpenDota and STRATZ public endpoints are ingested into a normalized snapshot table.
+- Patch freshness is enforced via `is_current` and `patch_version` metadata.
+- Chat context can include current-patch hero stats when relevant to user query.
 
 ## Development
 

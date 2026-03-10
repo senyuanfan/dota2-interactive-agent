@@ -1,5 +1,6 @@
 import type { DatabaseInstance } from '../index.js'
 import * as m001 from './001_initial_schema.js'
+import * as m002 from './002_meta_snapshots.js'
 
 export interface Migration {
   up: (db: DatabaseInstance) => void
@@ -10,4 +11,5 @@ export interface Migration {
 // Add new migrations here as they are created
 export const allMigrations: Record<string, Migration> = {
   '001_initial_schema': m001,
+  '002_meta_snapshots': m002,
 }

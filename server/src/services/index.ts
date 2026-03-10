@@ -2,3 +2,6 @@ export { LLMService, createLLMService, type ChatMessage, type LLMConfig, type LL
 export { searchWeb, type WebCitation } from './search.js'
 export { extractPreferences, hasPreferences, type ExtractedPreferences } from './profile.js'
 export { evolveProfile, buildPersonalizedPrompt, hasProfileData, type MemoryUpdate, type EvolutionResult } from './memory.js'
+export { fetchOpenDotaSnapshot, type OpenDotaSnapshot, type OpenDotaHeroStat } from './opendota.js'
+export { fetchStratzPublicSnapshot, type StratzSnapshot, type StratzHeroSummary } from './stratz.js'
+export { syncMetaData, getCurrentMeta, getRelevantCurrentMetaSources, type MetaEntry, type MetaContextSource, type SyncMetaResult } from './meta.js'

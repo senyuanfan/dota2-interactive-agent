@@ -5,6 +5,7 @@ An agent that understands the game of Dota2, its mechanics, up-to-date meta, cul
 Recent update:
 - [x] Refresh frontend UI style to brutalist monochrome with framed highlights.
 - [x] Reprioritize roadmap for current-patch freshness using OpenDota + STRATZ public data.
+- [x] Implement core Phase 2 backend: OpenDota + STRATZ public sync, patch freshness storage, and `/api/meta` endpoints.
 
 ---
 
@@ -40,12 +41,12 @@ Grasp understanding of the **current** version of the game. API-first data retri
 - Current patch signals/version markers and update timestamps
 
 **Tasks:**
-- [ ] Build OpenDota API client service (using `OPENDOTA_API_KEY`)
-- [ ] Build STRATZ public API client (no login/auth-only endpoints)
-- [ ] Implement patch version checker (periodic + manual trigger) with invalidation of stale data
-- [ ] Create normalization layer for OpenDota/STRATZ -> internal schema
-- [ ] Add patch freshness filter in retrieval/ranking pipeline
-- [ ] Build meta/tier list storage and update system (tagged by patch_version)
+- [x] Build OpenDota API client service (using `OPENDOTA_API_KEY`)
+- [x] Build STRATZ public API client (no login/auth-only endpoints)
+- [x] Implement patch version checker (manual trigger) with invalidation of stale data
+- [x] Create normalization layer for OpenDota/STRATZ -> internal schema
+- [x] Add patch freshness filter in retrieval/ranking pipeline
+- [x] Build meta/tier list storage and update system (tagged by patch_version)
 - [ ] Create hero guide storage linked to user preferences
 - [ ] Keep wiki scraping as secondary fallback/context source only
 
@@ -105,9 +106,9 @@ Chat interface to discuss game-related questions using the knowledge base.
   - KnowledgeBase table (articles, guides, meta info)
   - ChatHistory table
   - PatchInfo table
-- [ ] OpenDota API service integration
-- [ ] STRATZ public API integration (no login/auth-only endpoints)
-- [ ] Unified data normalization and freshness metadata pipeline
+- [x] OpenDota API service integration
+- [x] STRATZ public API integration (no login/auth-only endpoints)
+- [x] Unified data normalization and freshness metadata pipeline
 - [ ] Wiki scraper service (Dota2 Wiki, Liquipedia) as secondary fallback only
 - [ ] URL content scraper service
 - [x] LLM service abstraction (OpenAI, Anthropic, OpenRouter)
