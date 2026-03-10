@@ -2,6 +2,7 @@ import { Router } from 'express'
 import type { DatabaseInstance } from '../db/index.js'
 import type { LLMService, ChatMessage } from '../services/llm.js'
 import { searchWeb, type WebCitation } from '../services/search.js'
+import { searchKnowledge, knowledgeToCitations } from '../services/knowledge.js'
 import { getProfile, updateProfile, type UserProfile } from './profile.js'
 import { extractPreferences, hasPreferences } from '../services/profile.js'
 import { evolveProfile, buildPersonalizedPrompt, hasProfileData } from '../services/memory.js'
@@ -27,39 +28,55 @@ export function createChatRouter({ db, llm, serpApiKey }: ChatRouterDeps): Route
       return
     }
 
-    if (!serpApiKey) {
-      res.status(500).json({ error: 'SERPAPI_API_KEY is missing' })
-      return
-    }
-
     try {
       // Load user profile
       const profile = getProfile(db)
 
       // Extract preferences from user message (async, non-blocking)
-      // Run this in background - don't block the main response
       extractAndUpdateProfile(db, llm, message, profile).catch((err) => {
         console.error('Background profile update failed:', err)
       })
 
-      // Search the web for relevant information
-      const serpResults = await searchWeb(message, serpApiKey)
+      // 1. Search local knowledge base first
+      const kbResults = searchKnowledge(db, message, 5)
+      const kbSources = knowledgeToCitations(kbResults)
 
-      if (!serpResults.length) {
+      // 2. Supplement with web search if KB has fewer than 3 results
+      let webSources: WebCitation[] = []
+      if (kbSources.length < 3 && serpApiKey) {
+        const serpResults = await searchWeb(message, serpApiKey, { limit: 5 - kbSources.length })
+        webSources = serpResults
+        if (serpResults.length) {
+          try {
+            persistNotes(db, message, serpResults)
+          } catch (err) {
+            console.error('Failed to persist notes:', err)
+          }
+        }
+      }
+
+      // 3. Merge sources, dedup by URL
+      const seen = new Set<string>()
+      const allSources: WebCitation[] = []
+      for (const s of [...kbSources, ...webSources]) {
+        if (s.url && !seen.has(s.url)) {
+          seen.add(s.url)
+          allSources.push(s)
+        }
+      }
+
+      if (!allSources.length) {
         res.json({
           answer:
             'I could not find relevant sources for that query right now. Try rephrasing or adding more specifics.',
           citations: [],
+          kbHits: 0,
         })
         return
       }
 
-      // Persist search results to notes
-      persistNotes(db, message, serpResults)
-
-      // Build context and call LLM with personalized prompt
-      const citations = serpResults.map((r) => ({ title: r.title, url: r.url }))
-      const { systemMessage, userMessage } = buildPrompt(message, serpResults, profile)
+      const citations = allSources.map((r) => ({ title: r.title, url: r.url }))
+      const { systemMessage, userMessage } = buildPrompt(message, allSources, profile)
 
       const sanitizedHistory: ChatMessage[] = history.map((h) => ({
         role: h.role === 'assistant' ? 'assistant' : 'user',
@@ -74,6 +91,7 @@ export function createChatRouter({ db, llm, serpApiKey }: ChatRouterDeps): Route
       res.json({
         answer: response.content,
         citations,
+        kbHits: kbSources.length,
       })
     } catch (err) {
       console.error(err)
@@ -148,16 +166,19 @@ function persistNotes(
      VALUES (@query, @source_url, @source_title, @snippet, @tags, @summary);`
   )
 
-  const tags = 'web,serpapi'
+  const insertAll = db.transaction((items: WebCitation[]) => {
+    const tags = 'web,serpapi'
+    for (const s of items) {
+      insert.run({
+        query,
+        source_url: s.url,
+        source_title: s.title,
+        snippet: s.snippet ?? '',
+        tags,
+        summary: null,
+      })
+    }
+  })
 
-  for (const s of sources) {
-    insert.run({
-      query,
-      source_url: s.url,
-      source_title: s.title,
-      snippet: s.snippet ?? '',
-      tags,
-      summary: null,
-    })
-  }
+  insertAll(sources)
 }

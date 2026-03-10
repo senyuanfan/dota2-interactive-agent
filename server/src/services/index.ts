@@ -1,4 +1,6 @@
 export { LLMService, createLLMService, type ChatMessage, type LLMConfig, type LLMOptions, type LLMResponse } from './llm.js'
 export { searchWeb, type WebCitation } from './search.js'
-export { extractPreferences, hasPreferences, type ExtractedPreferences } from './profile.js'
+export { extractPreferences, hasPreferences, VALID_ROLES, type ExtractedPreferences } from './profile.js'
 export { evolveProfile, buildPersonalizedPrompt, hasProfileData, type MemoryUpdate, type EvolutionResult } from './memory.js'
+export { searchKnowledge, knowledgeToCitations, persistKnowledgeEntry, type KnowledgeSearchResult } from './knowledge.js'
+export { digestYouTubeVideo, type VideoDigest } from './youtube.js'
