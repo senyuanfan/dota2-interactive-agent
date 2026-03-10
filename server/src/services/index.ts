@@ -4,3 +4,6 @@ export { extractPreferences, hasPreferences, VALID_ROLES, type ExtractedPreferen
 export { evolveProfile, buildPersonalizedPrompt, hasProfileData, type MemoryUpdate, type EvolutionResult } from './memory.js'
 export { searchKnowledge, knowledgeToCitations, persistKnowledgeEntry, type KnowledgeSearchResult } from './knowledge.js'
 export { digestYouTubeVideo, type VideoDigest } from './youtube.js'
+export { fetchOpenDotaSnapshot, type OpenDotaSnapshot, type OpenDotaHeroStat } from './opendota.js'
+export { fetchStratzPublicSnapshot, type StratzSnapshot, type StratzHeroSummary } from './stratz.js'
+export { syncMetaData, type SyncMetaResult } from './meta.js'
