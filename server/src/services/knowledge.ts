@@ -90,11 +90,12 @@ export function persistKnowledgeEntry(
     tags?: string[]
     related_heroes?: string[]
     related_topics?: string[]
+    patch_version?: string
   }
 ): { id: number } {
   const stmt = db.prepare(
-    `INSERT INTO knowledge_base (source_url, source_type, title, content, summary, tags, related_heroes, related_topics)
-     VALUES (@source_url, @source_type, @title, @content, @summary, @tags, @related_heroes, @related_topics)`
+    `INSERT INTO knowledge_base (source_url, source_type, title, content, summary, tags, related_heroes, related_topics, patch_version)
+     VALUES (@source_url, @source_type, @title, @content, @summary, @tags, @related_heroes, @related_topics, @patch_version)`
   )
   const info = stmt.run({
     source_url: entry.source_url,
@@ -105,6 +106,7 @@ export function persistKnowledgeEntry(
     tags: JSON.stringify(entry.tags ?? []),
     related_heroes: JSON.stringify(entry.related_heroes ?? []),
     related_topics: JSON.stringify(entry.related_topics ?? []),
+    patch_version: entry.patch_version ?? null,
   })
   return { id: Number(info.lastInsertRowid) }
 }
