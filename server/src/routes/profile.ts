@@ -1,9 +1,7 @@
 import { Router } from 'express'
 import type { DatabaseInstance } from '../db/index.js'
 
-interface ProfileRouterDeps {
-  db: DatabaseInstance
-}
+export const DEFAULT_USER_ID = 1
 
 export interface UserProfile {
   userId: number
@@ -15,6 +13,10 @@ export interface UserProfile {
   learningGoals: string[]
   createdAt: string
   updatedAt: string
+}
+
+interface ProfileRouterDeps {
+  db: DatabaseInstance
 }
 
 interface DbProfileRow {
@@ -30,15 +32,24 @@ interface DbProfileRow {
   learning_goals: string
 }
 
+function safeParseArray(json: string | null | undefined): string[] {
+  try {
+    const parsed = JSON.parse(json || '[]')
+    return Array.isArray(parsed) ? parsed : []
+  } catch {
+    return []
+  }
+}
+
 function rowToProfile(row: DbProfileRow): UserProfile {
   return {
     userId: row.user_id,
-    preferredHeroes: JSON.parse(row.preferred_heroes || '[]'),
-    preferredRoles: JSON.parse(row.preferred_roles || '[]'),
+    preferredHeroes: safeParseArray(row.preferred_heroes),
+    preferredRoles: safeParseArray(row.preferred_roles),
     skillLevel: row.skill_level,
     mmrBracket: row.mmr_bracket,
     playstyle: row.playstyle,
-    learningGoals: JSON.parse(row.learning_goals || '[]'),
+    learningGoals: safeParseArray(row.learning_goals),
     createdAt: row.created_at,
     updatedAt: row.updated_at,
   }
@@ -52,7 +63,7 @@ export function createProfileRouter({ db }: ProfileRouterDeps): Router {
     try {
       const row = db
         .prepare('SELECT * FROM user_profiles WHERE user_id = ?')
-        .get(1) as DbProfileRow | undefined
+        .get(DEFAULT_USER_ID) as DbProfileRow | undefined
 
       if (!row) {
         res.status(404).json({ error: 'Profile not found' })
@@ -70,48 +81,24 @@ export function createProfileRouter({ db }: ProfileRouterDeps): Router {
   router.put('/', (req, res) => {
     try {
       const body = req.body || {}
-      const updates: string[] = []
-      const params: Record<string, unknown> = { user_id: 1 }
 
-      if (body.preferredHeroes !== undefined) {
-        updates.push('preferred_heroes = @preferred_heroes')
-        params.preferred_heroes = JSON.stringify(body.preferredHeroes)
-      }
-      if (body.preferredRoles !== undefined) {
-        updates.push('preferred_roles = @preferred_roles')
-        params.preferred_roles = JSON.stringify(body.preferredRoles)
-      }
-      if (body.skillLevel !== undefined) {
-        updates.push('skill_level = @skill_level')
-        params.skill_level = body.skillLevel
-      }
-      if (body.mmrBracket !== undefined) {
-        updates.push('mmr_bracket = @mmr_bracket')
-        params.mmr_bracket = body.mmrBracket
-      }
-      if (body.playstyle !== undefined) {
-        updates.push('playstyle = @playstyle')
-        params.playstyle = body.playstyle
-      }
-      if (body.learningGoals !== undefined) {
-        updates.push('learning_goals = @learning_goals')
-        params.learning_goals = JSON.stringify(body.learningGoals)
-      }
+      // Check if there's anything to update
+      const hasFields = [
+        'preferredHeroes', 'preferredRoles', 'skillLevel',
+        'mmrBracket', 'playstyle', 'learningGoals',
+      ].some((f) => body[f] !== undefined)
 
-      if (updates.length === 0) {
+      if (!hasFields) {
         res.status(400).json({ error: 'No valid fields to update' })
         return
       }
 
-      updates.push("updated_at = datetime('now')")
-
-      const sql = `UPDATE user_profiles SET ${updates.join(', ')} WHERE user_id = @user_id`
-      db.prepare(sql).run(params)
+      updateProfile(db, body)
 
       // Fetch and return updated profile
       const row = db
         .prepare('SELECT * FROM user_profiles WHERE user_id = ?')
-        .get(1) as DbProfileRow
+        .get(DEFAULT_USER_ID) as DbProfileRow
 
       res.json(rowToProfile(row))
     } catch (err) {
@@ -125,14 +112,14 @@ export function createProfileRouter({ db }: ProfileRouterDeps): Router {
     try {
       const row = db
         .prepare('SELECT preferred_heroes FROM user_profiles WHERE user_id = ?')
-        .get(1) as { preferred_heroes: string } | undefined
+        .get(DEFAULT_USER_ID) as { preferred_heroes: string } | undefined
 
       if (!row) {
         res.status(404).json({ error: 'Profile not found' })
         return
       }
 
-      res.json({ heroes: JSON.parse(row.preferred_heroes || '[]') })
+      res.json({ heroes: safeParseArray(row.preferred_heroes) })
     } catch (err) {
       console.error('Error fetching heroes:', err)
       res.status(500).json({ error: 'Failed to fetch heroes' })
@@ -150,7 +137,7 @@ export function createProfileRouter({ db }: ProfileRouterDeps): Router {
 
       db.prepare(
         "UPDATE user_profiles SET preferred_heroes = ?, updated_at = datetime('now') WHERE user_id = ?"
-      ).run(JSON.stringify(heroes), 1)
+      ).run(JSON.stringify(heroes), DEFAULT_USER_ID)
 
       res.json({ heroes })
     } catch (err) {
@@ -165,7 +152,7 @@ export function createProfileRouter({ db }: ProfileRouterDeps): Router {
 /**
  * Get user profile from database
  */
-export function getProfile(db: DatabaseInstance, userId: number = 1): UserProfile | null {
+export function getProfile(db: DatabaseInstance, userId: number = DEFAULT_USER_ID): UserProfile | null {
   const row = db
     .prepare('SELECT * FROM user_profiles WHERE user_id = ?')
     .get(userId) as DbProfileRow | undefined
@@ -179,7 +166,7 @@ export function getProfile(db: DatabaseInstance, userId: number = 1): UserProfil
 export function updateProfile(
   db: DatabaseInstance,
   profile: Partial<UserProfile>,
-  userId: number = 1
+  userId: number = DEFAULT_USER_ID
 ): void {
   const updates: string[] = []
   const params: Record<string, unknown> = { user_id: userId }

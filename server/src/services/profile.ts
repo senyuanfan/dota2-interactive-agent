@@ -8,13 +8,15 @@ export interface ExtractedPreferences {
   learningGoals?: string[]
 }
 
+export const VALID_ROLES = ['carry', 'mid', 'offlane', 'soft support', 'hard support', 'support'] as const
+
 const EXTRACTION_PROMPT = `You are analyzing a Dota 2 player's message to extract their preferences and profile information.
 
 Extract ONLY information that is CLEARLY and EXPLICITLY stated in the message. Do not assume or infer.
 
 Return a JSON object with these optional fields (include only fields that are clearly mentioned):
 - heroes: array of hero names mentioned positively (e.g., "I play Anti-Mage" or "I love PA")
-- roles: array of roles mentioned (valid: "carry", "mid", "offlane", "soft support", "hard support")
+- roles: array of roles mentioned (valid: ${VALID_ROLES.map((r) => `"${r}"`).join(', ')})
 - skillLevel: their rank if mentioned (e.g., "Herald", "Guardian", "Crusader", "Archon", "Legend", "Ancient", "Divine", "Immortal")
 - playstyle: description of their playstyle if mentioned (e.g., "aggressive", "farming focused", "team fighter")
 - learningGoals: array of things they want to learn or improve
@@ -67,9 +69,8 @@ export async function extractPreferences(
     }
 
     if (Array.isArray(parsed.roles) && parsed.roles.length > 0) {
-      const validRoles = ['carry', 'mid', 'offlane', 'soft support', 'hard support', 'support']
       result.roles = parsed.roles.filter(
-        (r: unknown) => typeof r === 'string' && validRoles.includes(r.toLowerCase())
+        (r: unknown) => typeof r === 'string' && (VALID_ROLES as readonly string[]).includes(r.toLowerCase())
       )
     }
 
