@@ -42,6 +42,8 @@ dota2-interactive-agent/
    OPENROUTER_API_KEY=your_key_here
 
    SERPAPI_API_KEY=your_serpapi_key
+   GEMINI_API_KEY=your_gemini_key
+   OPENDOTA_API_KEY=your_opendota_key_optional
    ```
 
 3. **Start the server**
@@ -58,6 +60,10 @@ dota2-interactive-agent/
 
 ### Chat
 - `POST /api/chat` - Send a message and get AI response with web-sourced citations
+
+### Knowledge Ingestion
+- `POST /api/ingest` - Digest a YouTube URL with Gemini and store the summary in the knowledge base
+- `POST /api/meta/sync` - Fetch current OpenDota/STRATZ public data and store patch-tagged meta entries
 
 ### Profile
 - `GET /api/profile` - Get current user profile
@@ -82,6 +88,9 @@ Preferences are automatically extracted from conversations using LLM and merged 
 
 ### Personalized Responses
 Chat responses are tailored based on the user's profile - advice is adjusted for their skill level, preferred heroes, and learning goals.
+
+### Knowledge Base and Meta Sync
+The backend can store digested YouTube videos and current-patch hero/meta data in SQLite. Meta sync uses OpenDota hero stats plus STRATZ public hero references, tags entries by patch version, and replaces older OpenDota/STRATZ entries during each manual sync.
 
 ## Development
 

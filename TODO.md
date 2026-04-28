@@ -5,6 +5,7 @@ An agent that understands the game of Dota2, its mechanics, up-to-date meta, cul
 Recent update:
 - [x] Refresh frontend UI style to brutalist monochrome with framed highlights.
 - [x] Reprioritize roadmap for current-patch freshness using OpenDota + STRATZ public data.
+- [x] Add manual meta sync endpoint backed by OpenDota and STRATZ public data.
 
 ---
 
@@ -40,12 +41,13 @@ Grasp understanding of the **current** version of the game. API-first data retri
 - Current patch signals/version markers and update timestamps
 
 **Tasks:**
-- [ ] Build OpenDota API client service (using `OPENDOTA_API_KEY`)
-- [ ] Build STRATZ public API client (no login/auth-only endpoints)
+- [x] Build OpenDota API client service (using optional `OPENDOTA_API_KEY`)
+- [x] Build STRATZ public API client (no login/auth-only endpoints)
 - [ ] Implement patch version checker (periodic + manual trigger) with invalidation of stale data
 - [ ] Create normalization layer for OpenDota/STRATZ -> internal schema
 - [ ] Add patch freshness filter in retrieval/ranking pipeline
-- [ ] Build meta/tier list storage and update system (tagged by patch_version)
+- [x] Build manual meta data storage/update path tagged by patch_version
+- [ ] Build derived tier list generation from stored meta data
 - [ ] Create hero guide storage linked to user preferences
 - [ ] Keep wiki scraping as secondary fallback/context source only
 
@@ -74,8 +76,9 @@ Digest content from URLs and transform into agent knowledge.
 
 **Tasks:**
 - [ ] Build URL content scraper (article extraction)
-- [ ] Implement content summarization and knowledge extraction
-- [ ] Store processed knowledge in SQLite
+- [x] Implement YouTube video summarization and knowledge extraction via Gemini
+- [ ] Implement article summarization and knowledge extraction
+- [x] Store processed knowledge in SQLite
 - [ ] Link knowledge entries to relevant heroes/topics
 
 ### 4. Before/After Game Discussion
@@ -105,8 +108,8 @@ Chat interface to discuss game-related questions using the knowledge base.
   - KnowledgeBase table (articles, guides, meta info)
   - ChatHistory table
   - PatchInfo table
-- [ ] OpenDota API service integration
-- [ ] STRATZ public API integration (no login/auth-only endpoints)
+- [x] OpenDota API service integration
+- [x] STRATZ public API integration (no login/auth-only endpoints)
 - [ ] Unified data normalization and freshness metadata pipeline
 - [ ] Wiki scraper service (Dota2 Wiki, Liquipedia) as secondary fallback only
 - [ ] URL content scraper service
@@ -119,10 +122,13 @@ Chat interface to discuss game-related questions using the knowledge base.
 - [x] Integration with chat flow (personalized system prompts)
 
 ### Phase 4: Knowledge Base System
-- [ ] URL ingestion endpoint
-- [ ] Content processing pipeline
+- [x] YouTube URL ingestion endpoint
+- [ ] Article URL ingestion endpoint
+- [x] YouTube content processing pipeline
+- [ ] Article content processing pipeline
 - [ ] Patch checker (cron job + manual trigger) with stale-data invalidation
-- [ ] Meta/tier list fetching and storage from OpenDota + STRATZ public data
+- [x] Manual meta fetching and storage from OpenDota + STRATZ public data
+- [ ] Derived tier list generation from stored meta data
 - [ ] Retrieval/rerank policy: prioritize current patch and exclude stale non-lore content
 
 ### Phase 5: Chat Interface
